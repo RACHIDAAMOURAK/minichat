@@ -1,0 +1,14 @@
+{
+  "name": "chat-demo",
+  "version": "1.0.0",
+  "description": "Démo Web mobile : Messaging (Socket.IO + Web Push)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "web-push": "^3.6.7"
+  }
+}
