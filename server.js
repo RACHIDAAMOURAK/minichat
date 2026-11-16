@@ -20,15 +20,27 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ---------- 1. Clés VAPID (identité du serveur push) ----------
 // Générées une seule fois puis sauvegardées dans vapid.json
+// Si le système de fichiers est en lecture seule (comme sur Enzonic), on bascule en mémoire.
 const VAPID_FILE = path.join(__dirname, "vapid.json");
 let vapid;
-if (fs.existsSync(VAPID_FILE)) {
-  vapid = JSON.parse(fs.readFileSync(VAPID_FILE, "utf8"));
-} else {
+
+try {
+  if (fs.existsSync(VAPID_FILE)) {
+    vapid = JSON.parse(fs.readFileSync(VAPID_FILE, "utf8"));
+  } else {
+    vapid = webpush.generateVAPIDKeys();
+    try {
+      fs.writeFileSync(VAPID_FILE, JSON.stringify(vapid, null, 2));
+      console.log("Clés VAPID générées et sauvegardées dans vapid.json");
+    } catch (writeError) {
+      console.log("Impossible d'écrire vapid.json (lecture seule). Clés générées en mémoire.");
+    }
+  }
+} catch (err) {
+  console.log("Erreur avec vapid.json. Génération de nouvelles clés en mémoire.");
   vapid = webpush.generateVAPIDKeys();
-  fs.writeFileSync(VAPID_FILE, JSON.stringify(vapid, null, 2));
-  console.log("Clés VAPID générées dans vapid.json");
 }
+
 webpush.setVapidDetails("mailto:demo@example.com", vapid.publicKey, vapid.privateKey);
 
 // ---------- 2. Abonnements push (en mémoire) ----------
